@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.vknewsclient.domain.FeedPost
 import com.example.vknewsclient.domain.StatisticItem
-import com.example.vknewsclient.ui.theme.NavigationItem
 
 class MainViewModel : ViewModel() {
 
