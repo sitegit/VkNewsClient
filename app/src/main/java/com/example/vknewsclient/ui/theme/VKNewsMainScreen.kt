@@ -10,28 +10,33 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.vknewsclient.MainViewModel
+import com.example.vknewsclient.navigation.AppNavGraph
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
-    val selectedNavItem by viewModel.selectedNavItem.observeAsState(NavigationItem.Home)
+    val navHostController = rememberNavController()
 
     Scaffold(
         bottomBar = {
             NavigationBar {
+                val navBackStackEntry by navHostController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
                 val items = listOf(
                     NavigationItem.Home,
                     NavigationItem.Favourite,
                     NavigationItem.Profile
                 )
+
                 items.forEach { item ->
                     NavigationBarItem(
-                        selected = selectedNavItem == item,
-                        onClick = { viewModel.selectNavItem(item) },
+                        selected = currentRoute == item.screen.route,
+                        onClick = { navHostController.navigate(item.screen.route) },
                         icon = {
                             Icon(item.icon, contentDescription = null)
                         },
@@ -50,11 +55,12 @@ fun MainScreen(viewModel: MainViewModel) {
             }
         },
         content = {
-            when (selectedNavItem) {
-                NavigationItem.Home -> HomeScreen(viewModel = viewModel)
-                NavigationItem.Favourite -> Text(text = "Favourite", color = Color.Blue)
-                NavigationItem.Profile -> Text(text = "Profile", color = Color.Blue)
-            }
+            AppNavGraph(
+                navHostController = navHostController,
+                homeScreenContent = { HomeScreen(viewModel = viewModel) },
+                favouriteScreenContent = { Text(text = "Favourite", color = Color.Blue) },
+                profileScreenContent = { Text(text = "Profile", color = Color.Blue) }
+            )
         }
     )
 }

@@ -51,6 +51,9 @@ android {
 
 dependencies {
 
+    //jetpack navigation
+    implementation("androidx.navigation:navigation-compose:$2.7.4")
+    //livedata
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
     //implementation("androidx.compose.material:material:1.5.3") Material 2
 
@@ -64,6 +67,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("com.google.android.material:material:1.10.0")
     implementation("com.google.android.engage:engage-core:1.3.0")
+    implementation("androidx.navigation:navigation-runtime-ktx:2.7.4")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
