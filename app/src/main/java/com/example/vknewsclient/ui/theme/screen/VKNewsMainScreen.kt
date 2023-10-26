@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.vknewsclient.domain.FeedPost
 import com.example.vknewsclient.navigation.AppNavGraph
@@ -37,7 +38,7 @@ fun MainScreen() {
         bottomBar = {
             NavigationBar {
                 val navBackStackEntry by navigateState.navHostController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
+
                 val items = listOf(
                     NavigationItem.Home,
                     NavigationItem.Favourite,
@@ -45,10 +46,16 @@ fun MainScreen() {
                 )
 
                 items.forEach { item ->
+                    val selected = navBackStackEntry?.destination?.hierarchy?.any {
+                        it.route == item.screen.route
+                    } ?: false
+
                     NavigationBarItem(
-                        selected = currentRoute == item.screen.route,
+                        selected = selected,
                         onClick = {
-                            navigateState.navigateTo(item.screen.route)
+                            if (!selected) {
+                                navigateState.navigateTo(item.screen.route)
+                            }
                         },
                         icon = {
                             Icon(item.icon, contentDescription = null)
@@ -74,16 +81,16 @@ fun MainScreen() {
                     HomeScreen(
                         onCommentsClickListener = {
                             commentsToPost.value = it
-                            navigateState.navigateTo(Screen.Comments.route)
+                            navigateState.navigateToComments()
                         }
                     )
                 },
                 commentsScreenContent = {
                     CommentsScreen(commentsToPost.value!!) {
-                        commentsToPost.value = null
+                        navigateState.navHostController.popBackStack()
                     }
                     BackHandler {
-                        commentsToPost.value = null
+                        navigateState.navHostController.popBackStack()
                     }
                 },
                 favouriteScreenContent = { Text(text = "Favourite", color = Color.Blue) },
