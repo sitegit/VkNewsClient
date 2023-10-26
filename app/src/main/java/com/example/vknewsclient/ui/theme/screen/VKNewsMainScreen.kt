@@ -1,6 +1,7 @@
 package com.example.vknewsclient.ui.theme.screen
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -9,19 +10,28 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.vknewsclient.MainViewModel
+import com.example.vknewsclient.domain.FeedPost
 import com.example.vknewsclient.navigation.AppNavGraph
 import com.example.vknewsclient.navigation.rememberNavigationState
-import com.example.vknewsclient.ui.theme.NavigationItem
+import com.example.vknewsclient.navigation.NavigationItem
+import com.example.vknewsclient.navigation.Screen
+import com.example.vknewsclient.ui.theme.screen.comments.CommentsScreen
+import com.example.vknewsclient.ui.theme.screen.home.HomeScreen
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
+fun MainScreen() {
     val navigateState = rememberNavigationState()
+    val commentsToPost: MutableState<FeedPost?> = remember {
+        mutableStateOf(null)
+    }
 
     Scaffold(
         bottomBar = {
@@ -38,7 +48,7 @@ fun MainScreen(viewModel: MainViewModel) {
                     NavigationBarItem(
                         selected = currentRoute == item.screen.route,
                         onClick = {
-                           navigateState.navigateTo(item.screen.route)
+                            navigateState.navigateTo(item.screen.route)
                         },
                         icon = {
                             Icon(item.icon, contentDescription = null)
@@ -60,7 +70,22 @@ fun MainScreen(viewModel: MainViewModel) {
         content = {
             AppNavGraph(
                 navHostController = navigateState.navHostController,
-                homeScreenContent = { HomeScreen(viewModel = viewModel) },
+                newsFeedScreenContent = {
+                    HomeScreen(
+                        onCommentsClickListener = {
+                            commentsToPost.value = it
+                            navigateState.navigateTo(Screen.Comments.route)
+                        }
+                    )
+                },
+                commentsScreenContent = {
+                    CommentsScreen(commentsToPost.value!!) {
+                        commentsToPost.value = null
+                    }
+                    BackHandler {
+                        commentsToPost.value = null
+                    }
+                },
                 favouriteScreenContent = { Text(text = "Favourite", color = Color.Blue) },
                 profileScreenContent = { Text(text = "Profile", color = Color.Blue) }
             )

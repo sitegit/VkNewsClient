@@ -1,4 +1,4 @@
-package com.example.vknewsclient.ui.theme.screen
+package com.example.vknewsclient.ui.theme.screen.comments
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -23,12 +23,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vknewsclient.domain.FeedPost
 import com.example.vknewsclient.domain.PostComment
 
@@ -36,43 +38,52 @@ import com.example.vknewsclient.domain.PostComment
 @Composable
 fun CommentsScreen(
     feedPost: FeedPost,
-    comments: List<PostComment>)
-{
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = "Commments for FeedPost Id: ${feedPost.id}",
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = null
+    onBackPressedListener: () -> Unit
+) {
+    val viewModel: CommentsViewModel = viewModel(factory = CommentsViewModelFactory(feedPost))
+    val screenState = viewModel.screenState.observeAsState(CommentsScreenState.Initial)
+
+    val currentState = screenState.value
+    if (currentState is CommentsScreenState.Comments) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = "Commments for FeedPost Id: ${currentState.feedPost.id}",
+                            textAlign = TextAlign.Center,
+                            fontSize = 18.sp
                         )
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { onBackPressedListener() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = null
+                            )
+                        }
                     }
+                )
+            }
+        ) { paddingValues ->
+            LazyColumn(
+                modifier = Modifier.padding(paddingValues),
+                contentPadding = PaddingValues(
+                    top = 16.dp,
+                    start = 8.dp,
+                    end = 8.dp,
+                    bottom = 92.dp
+                )
+            ) {
+                items(
+                    items = currentState.comments,
+                    key = { it.id }
+                ) {postComment ->
+                    CommentItem(postComment)
                 }
-            )
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier.padding(paddingValues),
-            contentPadding = PaddingValues(
-                top = 16.dp,
-                start = 8.dp,
-                end = 8.dp,
-                bottom = 92.dp
-            )
-        ) {
-            items(
-                items = comments,
-                key = { it.id }
-            ) {postComment ->
-                CommentItem(postComment)
             }
         }
     }
