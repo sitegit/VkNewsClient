@@ -51,6 +51,8 @@ android {
 
 dependencies {
 
+    //Gson
+    implementation("com.google.code.gson:gson:2.10.1")
     //jetpack navigation
     implementation("androidx.navigation:navigation-compose:$2.7.4")
     //livedata
