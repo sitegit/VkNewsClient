@@ -14,7 +14,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.vknewsclient.NewsFeedViewModel
 import com.example.vknewsclient.domain.FeedPost
 
 @Composable
@@ -60,8 +59,8 @@ private fun FeedPosts(
             SwipeToDismiss(
                 modifier = Modifier.animateItemPlacement(),
                 state = dissmissState,
-                background = {},
                 directions = setOf(DismissDirection.EndToStart),
+                background = {},
                 dismissContent = {
                     PostCard(
                         feedPost = feedPost,

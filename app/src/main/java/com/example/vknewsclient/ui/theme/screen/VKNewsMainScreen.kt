@@ -1,6 +1,7 @@
 package com.example.vknewsclient.ui.theme.screen
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -10,19 +11,15 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.vknewsclient.domain.FeedPost
 import com.example.vknewsclient.navigation.AppNavGraph
-import com.example.vknewsclient.navigation.rememberNavigationState
 import com.example.vknewsclient.navigation.NavigationItem
-import com.example.vknewsclient.navigation.Screen
+import com.example.vknewsclient.navigation.rememberNavigationState
 import com.example.vknewsclient.ui.theme.screen.comments.CommentsScreen
 import com.example.vknewsclient.ui.theme.screen.home.HomeScreen
 
@@ -30,9 +27,6 @@ import com.example.vknewsclient.ui.theme.screen.home.HomeScreen
 @Composable
 fun MainScreen() {
     val navigateState = rememberNavigationState()
-    val commentsToPost: MutableState<FeedPost?> = remember {
-        mutableStateOf(null)
-    }
 
     Scaffold(
         bottomBar = {
@@ -79,14 +73,13 @@ fun MainScreen() {
                 navHostController = navigateState.navHostController,
                 newsFeedScreenContent = {
                     HomeScreen(
-                        onCommentsClickListener = {
-                            commentsToPost.value = it
-                            navigateState.navigateToComments()
+                        onCommentsClickListener = { feedPost ->
+                            navigateState.navigateToComments(feedPost)
                         }
                     )
                 },
-                commentsScreenContent = {
-                    CommentsScreen(commentsToPost.value!!) {
+                commentsScreenContent = { feedPost ->
+                    CommentsScreen(feedPost) {
                         navigateState.navHostController.popBackStack()
                     }
                     BackHandler {

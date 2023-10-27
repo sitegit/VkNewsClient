@@ -51,7 +51,7 @@ fun CommentsScreen(
                     title = {
                         Text(
                             modifier = Modifier.fillMaxWidth(),
-                            text = "Commments for FeedPost Id: ${currentState.feedPost.id}",
+                            text = "Commments for FeedPost Id: ${currentState.feedPost.id} ${currentState.feedPost.contentText}",
                             textAlign = TextAlign.Center,
                             fontSize = 18.sp
                         )
