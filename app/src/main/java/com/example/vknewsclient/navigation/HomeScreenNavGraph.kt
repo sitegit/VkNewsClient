@@ -1,5 +1,6 @@
 package com.example.vknewsclient.navigation
 
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -27,7 +28,12 @@ fun NavGraphBuilder.homeScreenNavGraph(
                 }
             )
         ) {
-            val feedPost = it.arguments?.getParcelable<FeedPost>(KEY_FEED_POST) ?: throw RuntimeException("Args is null")
+            val feedPost = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                it.arguments?.getParcelable(KEY_FEED_POST, FeedPost::class.java) ?: throw RuntimeException("Args is null")
+            } else {
+                @Suppress("DEPRECATION")
+                it.arguments?.getParcelable(KEY_FEED_POST) ?: throw RuntimeException("Args is null")
+            }
             commentsScreenContent(feedPost)
         }
     }

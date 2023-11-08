@@ -1,7 +1,6 @@
-package com.example.vknewsclient.ui.theme.screen
+package com.example.vknewsclient.presentation.main
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -16,12 +15,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.vknewsclient.domain.FeedPost
 import com.example.vknewsclient.navigation.AppNavGraph
-import com.example.vknewsclient.navigation.NavigationItem
 import com.example.vknewsclient.navigation.rememberNavigationState
-import com.example.vknewsclient.ui.theme.screen.comments.CommentsScreen
-import com.example.vknewsclient.ui.theme.screen.home.HomeScreen
+import com.example.vknewsclient.presentation.comments.CommentsScreen
+import com.example.vknewsclient.presentation.news.NewsFeedScreen
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -72,7 +69,7 @@ fun MainScreen() {
             AppNavGraph(
                 navHostController = navigateState.navHostController,
                 newsFeedScreenContent = {
-                    HomeScreen(
+                    NewsFeedScreen(
                         onCommentsClickListener = { feedPost ->
                             navigateState.navigateToComments(feedPost)
                         }

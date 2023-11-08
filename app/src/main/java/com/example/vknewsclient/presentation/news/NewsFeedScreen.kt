@@ -1,4 +1,4 @@
-package com.example.vknewsclient.ui.theme.screen.home
+package com.example.vknewsclient.presentation.news
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vknewsclient.domain.FeedPost
 
 @Composable
-fun HomeScreen(
+fun NewsFeedScreen(
     onCommentsClickListener: (FeedPost) -> Unit
 ) {
     val viewModel: NewsFeedViewModel = viewModel()

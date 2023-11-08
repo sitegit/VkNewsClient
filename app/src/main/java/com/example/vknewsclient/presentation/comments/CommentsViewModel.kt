@@ -1,4 +1,4 @@
-package com.example.vknewsclient.ui.theme.screen.comments
+package com.example.vknewsclient.presentation.comments
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
