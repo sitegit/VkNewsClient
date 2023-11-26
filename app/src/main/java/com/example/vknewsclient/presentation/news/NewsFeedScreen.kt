@@ -29,6 +29,7 @@ import com.example.vknewsclient.ui.theme.DarkBlue
 
 @Composable
 fun NewsFeedScreen(
+    paddingValues: PaddingValues,
     onCommentsClickListener: (FeedPost) -> Unit
 ) {
     val component = getApplicationComponent()
@@ -37,6 +38,7 @@ fun NewsFeedScreen(
 
     NewsFeedScreenContent(
         screenState = screenState,
+        paddingValues = paddingValues,
         onCommentsClickListener = onCommentsClickListener,
         viewModel = viewModel
     )
@@ -45,12 +47,14 @@ fun NewsFeedScreen(
 @Composable
 private fun NewsFeedScreenContent(
     screenState: State<NewsFeedScreenState>,
+    paddingValues: PaddingValues,
     onCommentsClickListener: (FeedPost) -> Unit,
     viewModel: NewsFeedViewModel
 ) {
     when (val currentState = screenState.value) {
         is NewsFeedScreenState.Posts -> FeedPosts(
             posts = currentState.posts,
+            paddingValues = paddingValues,
             viewModel = viewModel,
             onCommentsClickListener = onCommentsClickListener,
             nextDataIsLoading = currentState.nextDataIsLoading
@@ -71,11 +75,13 @@ private fun NewsFeedScreenContent(
 @Composable
 private fun FeedPosts(
     posts: List<FeedPost>,
+    paddingValues: PaddingValues,
     viewModel: NewsFeedViewModel,
     onCommentsClickListener: (FeedPost) -> Unit,
     nextDataIsLoading: Boolean
 ) {
     LazyColumn(
+        modifier = Modifier.padding(paddingValues),
         contentPadding = PaddingValues(
             top = 16.dp,
             start = 8.dp,

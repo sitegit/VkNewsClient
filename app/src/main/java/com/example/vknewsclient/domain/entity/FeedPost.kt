@@ -3,10 +3,10 @@ package com.example.vknewsclient.domain.entity
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import androidx.compose.runtime.Immutable
 import androidx.navigation.NavType
 import com.google.gson.Gson
 import kotlinx.parcelize.Parcelize
-import javax.annotation.concurrent.Immutable
 
 @Immutable
 @Parcelize

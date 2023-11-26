@@ -64,28 +64,28 @@ fun MainScreen() {
                     )
                 }
             }
-        },
-        content = {
-            AppNavGraph(
-                navHostController = navigateState.navHostController,
-                newsFeedScreenContent = {
-                    NewsFeedScreen(
-                        onCommentsClickListener = { feedPost ->
-                            navigateState.navigateToComments(feedPost)
-                        }
-                    )
-                },
-                commentsScreenContent = { feedPost ->
-                    CommentsScreen(feedPost) {
-                        navigateState.navHostController.popBackStack()
-                    }
-                    BackHandler {
-                        navigateState.navHostController.popBackStack()
-                    }
-                },
-                favouriteScreenContent = { Text(text = "Favourite", color = Color.Blue) },
-                profileScreenContent = { Text(text = "Profile", color = Color.Blue) }
-            )
         }
-    )
+    ) { paddingValues ->
+        AppNavGraph(
+            navHostController = navigateState.navHostController,
+            newsFeedScreenContent = {
+                NewsFeedScreen(
+                    paddingValues = paddingValues,
+                    onCommentsClickListener = { feedPost ->
+                        navigateState.navigateToComments(feedPost)
+                    }
+                )
+            },
+            commentsScreenContent = { feedPost ->
+                CommentsScreen(feedPost) {
+                    navigateState.navHostController.popBackStack()
+                }
+                BackHandler {
+                    navigateState.navHostController.popBackStack()
+                }
+            },
+            favouriteScreenContent = { Text(text = "Favourite", color = Color.Blue) },
+            profileScreenContent = { Text(text = "Profile", color = Color.Blue) }
+        )
+    }
 }
