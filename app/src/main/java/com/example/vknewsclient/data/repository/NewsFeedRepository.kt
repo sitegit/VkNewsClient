@@ -9,6 +9,7 @@ import com.example.vknewsclient.domain.PostComment
 import com.example.vknewsclient.domain.StatisticItem
 import com.example.vknewsclient.domain.StatisticType
 import com.example.vknewsclient.extentions.mergeWith
+import com.example.vknewsclient.domain.AuthState
 import com.vk.api.sdk.VKPreferencesKeyValueStorage
 import com.vk.api.sdk.auth.VKAccessToken
 import kotlinx.coroutines.CoroutineScope
@@ -18,12 +19,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
 
-// Класс репозитория для работы с новостной лентой
 class NewsFeedRepository(application: Application) {
 
     // Маппер для преобразования данных ответа API в модели данных приложения
@@ -95,6 +94,22 @@ class NewsFeedRepository(application: Application) {
     // Переменная для отслеживания позиции следующей загрузки данных
     private var nextFrom: String? = null
 
+    private val checkAuthStateEvents = MutableSharedFlow<Unit>(replay = 1)
+
+    val authStateFlow = flow {
+        checkAuthStateEvents.emit(Unit)
+        checkAuthStateEvents.collect {
+            val currentToken = token
+            val loggedIn = currentToken != null && currentToken.isValid
+            val authState = if (loggedIn) AuthState.Authorized else AuthState.NotAuthorized
+            emit(authState)
+        }
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Lazily,
+        initialValue = AuthState.Initial
+    )
+
     // Поток состояния для предоставления рекомендаций
     val recommendations: StateFlow<List<FeedPost>> = loadedListFlow
         .mergeWith(refreshedListFlow)
@@ -107,6 +122,10 @@ class NewsFeedRepository(application: Application) {
     // Функция для загрузки следующего блока данных
     suspend fun loadNextData() {
         nextDataNeededEvents.emit(Unit)
+    }
+
+    suspend fun checkAuthState() {
+        checkAuthStateEvents.emit(Unit)
     }
 
     // Функция для удаления поста из ленты

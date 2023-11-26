@@ -4,8 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.vknewsclient.domain.AuthState
 import com.example.vknewsclient.ui.theme.VkNewsClientTheme
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.auth.VKScope
@@ -18,12 +20,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             VkNewsClientTheme {
                 val viewModel: MainViewModel = viewModel()
-                val authState = viewModel.authState.observeAsState(initial = AuthState.Initial)
+                val authState = viewModel.authState.collectAsState(initial = AuthState.Initial)
 
                 val authLauncher = rememberLauncherForActivityResult(
                     contract = VK.getVKAuthActivityResultContract()
                 ) {
-                    viewModel.performAuthResult(it)
+                    viewModel.performAuthResult()
                 }
 
                 when (authState.value) {
