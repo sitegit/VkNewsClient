@@ -1,12 +1,10 @@
 package com.example.vknewsclient.presentation.comments
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,11 +23,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,35 +36,33 @@ import coil.compose.AsyncImage
 import com.example.vknewsclient.R
 import com.example.vknewsclient.domain.entity.FeedPost
 import com.example.vknewsclient.domain.entity.PostComment
-import com.example.vknewsclient.presentation.NewsFeedApplication
-import com.example.vknewsclient.ui.theme.DarkBlue
+import com.example.vknewsclient.presentation.getApplicationComponent
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommentsScreen(
     feedPost: FeedPost,
     onBackPressedListener: () -> Unit
 ) {
-    val component = (LocalContext.current.applicationContext as NewsFeedApplication)
-        .component
+    val component = getApplicationComponent()
         .getCommentsScreenComponentFactory()
         .create(feedPost)
 
-    val viewModel: CommentsViewModel = viewModel(
-        factory = component.getViewModelFactory()
-    )
+    val viewModel: CommentsViewModel = viewModel(factory = component.getViewModelFactory())
     val screenState = viewModel.screenState.collectAsState(CommentsScreenState.Initial)
 
-    val currentState = screenState.value
+    CommentsScreenContent(
+        screenState = screenState,
+        onBackPressedListener = onBackPressedListener
+    )
+}
 
-    if (currentState is CommentsScreenState.Loading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = DarkBlue)
-        }
-    }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CommentsScreenContent(
+    screenState: State<CommentsScreenState>,
+    onBackPressedListener: () -> Unit,
+) {
+    val currentState = screenState.value
 
     if (currentState is CommentsScreenState.Comments) {
         Scaffold(
@@ -78,7 +72,7 @@ fun CommentsScreen(
                         Text(
                             modifier = Modifier.fillMaxWidth(),
                             text = stringResource(R.string.Comments),
-                            textAlign = TextAlign.Center,
+                            textAlign = TextAlign.Start,
                             fontSize = 18.sp
                         )
                     },

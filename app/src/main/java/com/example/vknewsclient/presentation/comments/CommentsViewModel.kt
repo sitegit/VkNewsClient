@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import com.example.vknewsclient.domain.entity.FeedPost
 import com.example.vknewsclient.domain.usecase.GetCommentsUseCase
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
 class CommentsViewModel @Inject constructor(
@@ -17,7 +16,6 @@ class CommentsViewModel @Inject constructor(
             CommentsScreenState.Comments(
                 feedPost = feedPost,
                 comments = it
-            ) as CommentsScreenState
+            )
         }
-        .onStart { emit(CommentsScreenState.Loading) } // Инициализация состояния загрузки
 }

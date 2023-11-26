@@ -6,7 +6,9 @@ import android.os.Parcelable
 import androidx.navigation.NavType
 import com.google.gson.Gson
 import kotlinx.parcelize.Parcelize
+import javax.annotation.concurrent.Immutable
 
+@Immutable
 @Parcelize
 data class FeedPost(
     val id: Long,
