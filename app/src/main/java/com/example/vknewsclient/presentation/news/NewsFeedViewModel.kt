@@ -4,8 +4,12 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.vknewsclient.data.repository.NewsFeedRepository
-import com.example.vknewsclient.domain.FeedPost
+import com.example.vknewsclient.data.repository.NewsFeedRepositoryImpl
+import com.example.vknewsclient.domain.entity.FeedPost
+import com.example.vknewsclient.domain.usecase.ChangeLikeStatusUseCase
+import com.example.vknewsclient.domain.usecase.DeletePostUseCase
+import com.example.vknewsclient.domain.usecase.GetRecommendationsUseCase
+import com.example.vknewsclient.domain.usecase.LoadNextDataUseCase
 import com.example.vknewsclient.extentions.mergeWith
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,10 +26,15 @@ class NewsFeedViewModel(application: Application) : AndroidViewModel(application
     }
 
     // Создание экземпляра репозитория для доступа к данным новостной ленты
-    private val repository = NewsFeedRepository(application)
+    private val repository = NewsFeedRepositoryImpl(application)
+
+    private val getRecommendationsUseCase = GetRecommendationsUseCase(repository)
+    private val loadNextDataUseCase = LoadNextDataUseCase(repository)
+    private val changeLikeStatusUseCase = ChangeLikeStatusUseCase(repository)
+    private val deletePostUseCase = DeletePostUseCase(repository)
 
     // Поток рекомендаций из репозитория
-    private val recommendationsFlow = repository.recommendations
+    private val recommendationsFlow = getRecommendationsUseCase()
 
     // Поток для управления состоянием загрузки данных
     private val loadNextDataFlow = MutableSharedFlow<NewsFeedScreenState>()
@@ -48,7 +57,7 @@ class NewsFeedViewModel(application: Application) : AndroidViewModel(application
                 )
             )
             // Запрос на загрузку следующих данных через репозиторий
-            repository.loadNextData()
+            loadNextDataUseCase()
         }
     }
 
@@ -56,7 +65,7 @@ class NewsFeedViewModel(application: Application) : AndroidViewModel(application
     fun changeLikeStatus(feedPost: FeedPost) {
         viewModelScope.launch(exceptionHandler) {
             // Делегирование операции изменения лайка репозиторию
-            repository.changeLikeStatus(feedPost)
+            changeLikeStatusUseCase(feedPost)
         }
     }
 
@@ -64,7 +73,7 @@ class NewsFeedViewModel(application: Application) : AndroidViewModel(application
     fun removePost(feedPost: FeedPost) {
         viewModelScope.launch(exceptionHandler) {
             // Делегирование операции удаления поста репозиторию
-            repository.deletePost(feedPost)
+            deletePostUseCase(feedPost)
         }
     }
 }

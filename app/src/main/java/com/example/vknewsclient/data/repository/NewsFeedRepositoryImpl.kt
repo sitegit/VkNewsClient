@@ -4,18 +4,18 @@ import android.app.Application
 import android.util.Log
 import com.example.vknewsclient.data.mapper.NewsFeedMapper
 import com.example.vknewsclient.data.network.ApiFactory
-import com.example.vknewsclient.domain.FeedPost
-import com.example.vknewsclient.domain.PostComment
-import com.example.vknewsclient.domain.StatisticItem
-import com.example.vknewsclient.domain.StatisticType
+import com.example.vknewsclient.domain.repository.NewsFeedRepository
+import com.example.vknewsclient.domain.entity.FeedPost
+import com.example.vknewsclient.domain.entity.PostComment
+import com.example.vknewsclient.domain.entity.StatisticItem
+import com.example.vknewsclient.domain.entity.StatisticType
 import com.example.vknewsclient.extentions.mergeWith
-import com.example.vknewsclient.domain.AuthState
+import com.example.vknewsclient.domain.entity.AuthState
 import com.vk.api.sdk.VKPreferencesKeyValueStorage
 import com.vk.api.sdk.auth.VKAccessToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
 
-class NewsFeedRepository(application: Application) {
+class NewsFeedRepositoryImpl(application: Application) : NewsFeedRepository {
 
     // Маппер для преобразования данных ответа API в модели данных приложения
     private val mapper = NewsFeedMapper()
@@ -39,6 +39,16 @@ class NewsFeedRepository(application: Application) {
 
     // Область видимости для корутин, использующая диспетчер по умолчанию
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
+
+    // Внутренний список постов новостной ленты
+    private val _feedPosts = mutableListOf<FeedPost>()
+
+    // Публичный список постов новостной ленты
+    private val feedPosts: List<FeedPost>
+        get() = _feedPosts.toList()
+
+    // Переменная для отслеживания позиции следующей загрузки данных
+    private var nextFrom: String? = null
 
     // Поток для управления событиями запроса новых данных
     private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
@@ -84,19 +94,9 @@ class NewsFeedRepository(application: Application) {
         true
     }
 
-    // Внутренний список постов новостной ленты
-    private val _feedPosts = mutableListOf<FeedPost>()
-
-    // Публичный список постов новостной ленты
-    private val feedPosts: List<FeedPost>
-        get() = _feedPosts.toList()
-
-    // Переменная для отслеживания позиции следующей загрузки данных
-    private var nextFrom: String? = null
-
     private val checkAuthStateEvents = MutableSharedFlow<Unit>(replay = 1)
 
-    val authStateFlow = flow {
+    private val authStateFlow = flow {
         checkAuthStateEvents.emit(Unit)
         checkAuthStateEvents.collect {
             val currentToken = token
@@ -111,7 +111,7 @@ class NewsFeedRepository(application: Application) {
     )
 
     // Поток состояния для предоставления рекомендаций
-    val recommendations: StateFlow<List<FeedPost>> = loadedListFlow
+    private val recommendations: StateFlow<List<FeedPost>> = loadedListFlow
         .mergeWith(refreshedListFlow)
         .stateIn(
             scope = coroutineScope,
@@ -119,17 +119,21 @@ class NewsFeedRepository(application: Application) {
             initialValue = feedPosts
         )
 
+    override fun getAuthStateFlow() = authStateFlow
+
+    override fun getRecommendations() = recommendations
+
     // Функция для загрузки следующего блока данных
-    suspend fun loadNextData() {
+    override suspend fun loadNextData() {
         nextDataNeededEvents.emit(Unit)
     }
 
-    suspend fun checkAuthState() {
+    override suspend fun checkAuthState() {
         checkAuthStateEvents.emit(Unit)
     }
 
     // Функция для удаления поста из ленты
-    suspend fun deletePost(feedPost: FeedPost) {
+    override suspend fun deletePost(feedPost: FeedPost) {
         apiService.ignorePost(
             token = getAccessToken(),
             ownerId = feedPost.communityId,
@@ -140,7 +144,7 @@ class NewsFeedRepository(application: Application) {
     }
 
     // Функция для получения комментариев к посту
-    fun getComments(feedPost: FeedPost): Flow<List<PostComment>> = flow {
+    override fun getComments(feedPost: FeedPost): StateFlow<List<PostComment>> = flow {
         // Вызов API для получения комментариев к конкретному посту
         val comments = apiService.getComments(
             token = getAccessToken(), // Получение токена доступа
@@ -156,11 +160,15 @@ class NewsFeedRepository(application: Application) {
         Log.i("Throwable", it.toString())
         // Возврат true для повторения запроса
         true
-    }
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Lazily,
+        initialValue = listOf()
+    )
 
 
     // Функция для изменения статуса лайка у поста
-    suspend fun changeLikeStatus(feedPost: FeedPost) {
+    override suspend fun changeLikeStatus(feedPost: FeedPost) {
         val response = if (feedPost.isLiked) {
             apiService.deleteLike(
                 token = getAccessToken(),
