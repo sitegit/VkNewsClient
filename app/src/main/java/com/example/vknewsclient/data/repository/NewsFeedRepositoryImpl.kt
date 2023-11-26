@@ -1,16 +1,15 @@
 package com.example.vknewsclient.data.repository
 
-import android.app.Application
 import android.util.Log
 import com.example.vknewsclient.data.mapper.NewsFeedMapper
-import com.example.vknewsclient.data.network.ApiFactory
-import com.example.vknewsclient.domain.repository.NewsFeedRepository
+import com.example.vknewsclient.data.network.ApiService
+import com.example.vknewsclient.domain.entity.AuthState
 import com.example.vknewsclient.domain.entity.FeedPost
 import com.example.vknewsclient.domain.entity.PostComment
 import com.example.vknewsclient.domain.entity.StatisticItem
 import com.example.vknewsclient.domain.entity.StatisticType
+import com.example.vknewsclient.domain.repository.NewsFeedRepository
 import com.example.vknewsclient.extentions.mergeWith
-import com.example.vknewsclient.domain.entity.AuthState
 import com.vk.api.sdk.VKPreferencesKeyValueStorage
 import com.vk.api.sdk.auth.VKAccessToken
 import kotlinx.coroutines.CoroutineScope
@@ -22,17 +21,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
-class NewsFeedRepositoryImpl(application: Application) : NewsFeedRepository {
-
-    // Маппер для преобразования данных ответа API в модели данных приложения
-    private val mapper = NewsFeedMapper()
-
-    // Сервис для выполнения API запросов
-    private val apiService = ApiFactory.apiService
-
-    // Хранилище для ключей и значений, используемое для работы с токенами VK
-    private val storage = VKPreferencesKeyValueStorage(application)
+class NewsFeedRepositoryImpl @Inject constructor(
+    private val mapper: NewsFeedMapper,
+    private val apiService: ApiService,
+    private val storage: VKPreferencesKeyValueStorage
+) : NewsFeedRepository {
 
     // Восстановление токена доступа VK из хранилища
     private val token = VKAccessToken.restore(storage)

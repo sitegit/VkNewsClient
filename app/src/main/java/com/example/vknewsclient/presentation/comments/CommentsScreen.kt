@@ -1,6 +1,5 @@
 package com.example.vknewsclient.presentation.comments
 
-import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +40,7 @@ import coil.compose.AsyncImage
 import com.example.vknewsclient.R
 import com.example.vknewsclient.domain.entity.FeedPost
 import com.example.vknewsclient.domain.entity.PostComment
+import com.example.vknewsclient.presentation.NewsFeedApplication
 import com.example.vknewsclient.ui.theme.DarkBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,11 +49,13 @@ fun CommentsScreen(
     feedPost: FeedPost,
     onBackPressedListener: () -> Unit
 ) {
+    val component = (LocalContext.current.applicationContext as NewsFeedApplication)
+        .component
+        .getCommentsScreenComponentFactory()
+        .create(feedPost)
+
     val viewModel: CommentsViewModel = viewModel(
-        factory = CommentsViewModelFactory(
-            feedPost,
-            LocalContext.current.applicationContext as Application
-        )
+        factory = component.getViewModelFactory()
     )
     val screenState = viewModel.screenState.collectAsState(CommentsScreenState.Initial)
 

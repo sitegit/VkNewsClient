@@ -1,7 +1,9 @@
 package com.example.vknewsclient.domain.usecase
 
 import com.example.vknewsclient.domain.repository.NewsFeedRepository
-class CheckAuthStateUseCase(
+import javax.inject.Inject
+
+class CheckAuthStateUseCase @Inject constructor(
     private val repository: NewsFeedRepository
 ) {
 

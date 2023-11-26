@@ -7,18 +7,30 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vknewsclient.domain.entity.AuthState
+import com.example.vknewsclient.presentation.NewsFeedApplication
+import com.example.vknewsclient.presentation.ViewModelFactory
 import com.example.vknewsclient.ui.theme.VkNewsClientTheme
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.auth.VKScope
+import javax.inject.Inject
 
 
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val component by lazy {
+        (application as NewsFeedApplication).component
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        component.inject(this)
         super.onCreate(savedInstanceState)
 
         setContent {
             VkNewsClientTheme {
-                val viewModel: MainViewModel = viewModel()
+                val viewModel: MainViewModel = viewModel(factory = viewModelFactory)
                 val authState = viewModel.authState.collectAsState(initial = AuthState.Initial)
 
                 val authLauncher = rememberLauncherForActivityResult(
@@ -28,7 +40,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 when (authState.value) {
-                    is AuthState.Authorized -> MainScreen()
+                    is AuthState.Authorized -> MainScreen(viewModelFactory)
                     is AuthState.NotAuthorized -> LoginScreen {
                         authLauncher.launch(listOf(VKScope.WALL, VKScope.FRIENDS))
                     }
