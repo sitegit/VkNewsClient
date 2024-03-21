@@ -1,0 +1,181 @@
+package com.example.vknewsclient.data.repository
+
+import com.example.vknewsclient.data.mapper.NewsFeedMapper
+import com.example.vknewsclient.data.model.general.LikesCountResponseDto
+import com.example.vknewsclient.data.network.ApiService
+import com.example.vknewsclient.data.network.TokenManager
+import com.example.vknewsclient.domain.entity.FeedPost
+import com.example.vknewsclient.domain.entity.PostComment
+import com.example.vknewsclient.domain.entity.StatisticItem
+import com.example.vknewsclient.domain.entity.StatisticType
+import com.example.vknewsclient.domain.repository.NewsFeedRepository
+import com.example.vknewsclient.extentions.mergeWith
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.retry
+import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
+
+class NewsFeedRepositoryImpl @Inject constructor(
+    private val mapper: NewsFeedMapper,
+    private val apiService: ApiService,
+    private val tokenManager: TokenManager
+) : NewsFeedRepository {
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+
+    private val _feedPosts = mutableListOf<FeedPost>()
+    private val feedPosts: List<FeedPost>
+        get() = _feedPosts.toList()
+
+    private val _favePosts = mutableListOf<FeedPost>()
+    private val favePosts: List<FeedPost>
+        get() = _favePosts.toList()
+
+    private var nextFrom: String? = null
+
+    private val nextDataNeededEvents = MutableSharedFlow<Unit>(replay = 1)
+
+    private val refreshedListFlow = MutableSharedFlow<List<FeedPost>>()
+
+    private val loadedListFlow = flow {
+        nextDataNeededEvents.emit(Unit)
+
+        nextDataNeededEvents.collect {
+            val startFrom = nextFrom
+
+            if (startFrom == null && feedPosts.isNotEmpty()) {
+                emit(feedPosts)
+                return@collect
+            }
+
+            val response = if (startFrom == null) {
+                apiService.loadRecommendations(getAccessToken())
+            } else {
+                apiService.loadRecommendations(getAccessToken(), startFrom)
+            }
+
+            nextFrom = response.newsFeedContent.nextFrom
+
+            val posts = mapper.mapResponseToPosts(response)
+            _feedPosts.addAll(posts)
+            emit(feedPosts)
+        }
+    }.retry {
+        delay(RETRY_TIMEOUT_MILLIS)
+        true
+    }
+
+    private val recommendations: StateFlow<List<FeedPost>> = loadedListFlow
+        .mergeWith(refreshedListFlow)
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.Lazily,
+            initialValue = feedPosts
+        )
+
+    override fun getRecommendations() = recommendations
+
+    override suspend fun loadNextData() {
+        nextDataNeededEvents.emit(Unit)
+    }
+
+    private val favouritePosts: StateFlow<List<FeedPost>> = flow {
+        nextDataNeededEvents.emit(Unit)
+        nextDataNeededEvents.collect {
+            _favePosts.clear()
+            val posts = mapper.mapFaveResponseToPosts(apiService.getFave(getAccessToken()))
+            _favePosts.addAll(posts)
+            emit(favePosts)
+        }
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Lazily,
+        initialValue = favePosts
+    )
+
+    override fun getFavePosts() = favouritePosts
+
+    override fun getComments(feedPost: FeedPost): StateFlow<List<PostComment>> = flow {
+        val comments = apiService.getComments(
+            token = getAccessToken(),
+            ownerId = feedPost.communityId,
+            postId = feedPost.id
+        )
+        emit(mapper.commentsResponseToPostComments(comments))
+    }.retry {
+        delay(RETRY_TIMEOUT_MILLIS)
+        true
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Lazily,
+        initialValue = listOf()
+    )
+
+    override suspend fun changeLikeStatus(feedPost: FeedPost) {
+        val response = if (feedPost.isLiked) {
+            removeLike(feedPost)
+        } else {
+            addLike(feedPost)
+        }
+        nextDataNeededEvents.emit(Unit)
+
+        val newLikesCount = response.likes.count
+        val newStatistics = feedPost.statistics.toMutableList().apply {
+            removeIf { it.type == StatisticType.LIKES }
+            add(StatisticItem(type = StatisticType.LIKES, count = newLikesCount))
+        }
+        val newPost = feedPost.copy(statistics = newStatistics, isLiked = !feedPost.isLiked)
+        val postIndex = _feedPosts.indexOfFirst { it.id == feedPost.id }
+        if (postIndex == -1) return else _feedPosts[postIndex] = newPost
+        refreshedListFlow.emit(feedPosts)}
+
+    override suspend fun deletePost(feedPost: FeedPost) {
+        apiService.ignorePost(
+            token = getAccessToken(),
+            ownerId = feedPost.communityId,
+            postId = feedPost.id
+        )
+        _feedPosts.remove(feedPost)
+        refreshedListFlow.emit(feedPosts)
+    }
+
+    private suspend fun removeLike(feedPost: FeedPost): LikesCountResponseDto {
+        apiService.removeFave(
+            token = getAccessToken(),
+            ownerId = feedPost.communityId,
+            postId = feedPost.id
+        )
+        return apiService.deleteLike(
+            token = getAccessToken(),
+            ownerId = feedPost.communityId,
+            postId = feedPost.id
+        )
+    }
+
+    private suspend fun addLike(feedPost: FeedPost): LikesCountResponseDto {
+        apiService.addFave(
+            token = getAccessToken(),
+            ownerId = feedPost.communityId,
+            postId = feedPost.id
+        )
+        return apiService.addLike(
+            token = getAccessToken(),
+            ownerId = feedPost.communityId,
+            postId = feedPost.id
+        )
+    }
+
+    private fun getAccessToken(): String {
+        return tokenManager.getAccessToken()
+    }
+
+    companion object {
+        const val RETRY_TIMEOUT_MILLIS: Long = 3000
+    }
+}

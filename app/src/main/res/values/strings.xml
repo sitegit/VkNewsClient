@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">Vk News Client</string>
+    <integer name="com_vk_sdk_AppId">51782569</integer>
+
+    <string name="template_text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</string>
+    <string name="navigation_item_main">Главная</string>
+    <string name="navigation_item_favourite">Избранное</string>
+    <string name="navigation_item_profile">Профиль</string>
+    <string name="btn_login">Войти</string>
+    <string name="Comments">Комментарии</string>
+    <string name="logout">Выйти</string>
+    <string name="about">О себе</string>
+    <string name="friends">"Друзья: "</string>
+    <string name="followers">Подписчики:</string>
+    <string name="groups">Сообщества:</string>
+    <string name="photos">Фотографии:</string>
+    <string name="videos">Видеозаписи:</string>
+    <string name="gifts">Подарки:</string>
 </resources>
