@@ -29,7 +29,8 @@ fun NavGraphBuilder.homeScreenNavGraph(
             )
         ) {
             val feedPost = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                it.arguments?.getParcelable(KEY_FEED_POST, FeedPost::class.java) ?: throw RuntimeException("Args is null")
+                it.arguments?.getParcelable(KEY_FEED_POST, FeedPost::class.java)
+                    ?: throw RuntimeException("Args is null")
             } else {
                 @Suppress("DEPRECATION")
                 it.arguments?.getParcelable(KEY_FEED_POST) ?: throw RuntimeException("Args is null")

@@ -1,7 +1,7 @@
 package com.example.vknewsclient.di
 
 import com.example.vknewsclient.domain.entity.FeedPost
-import com.example.vknewsclient.presentation.ViewModelFactory
+import com.example.vknewsclient.presentation.core.ViewModelFactory
 import dagger.BindsInstance
 import dagger.Subcomponent
 

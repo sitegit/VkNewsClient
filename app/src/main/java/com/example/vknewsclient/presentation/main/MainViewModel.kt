@@ -16,7 +16,7 @@ class MainViewModel @Inject constructor(
 
     fun performAuthResult() {
         viewModelScope.launch {
-            checkAuthStateUseCase
+            checkAuthStateUseCase()
         }
     }
 }

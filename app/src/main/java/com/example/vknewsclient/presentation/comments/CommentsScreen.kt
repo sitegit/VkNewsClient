@@ -36,7 +36,7 @@ import coil.compose.AsyncImage
 import com.example.vknewsclient.R
 import com.example.vknewsclient.domain.entity.FeedPost
 import com.example.vknewsclient.domain.entity.PostComment
-import com.example.vknewsclient.presentation.getApplicationComponent
+import com.example.vknewsclient.presentation.core.getApplicationComponent
 
 @Composable
 fun CommentsScreen(
@@ -60,7 +60,7 @@ fun CommentsScreen(
 @Composable
 private fun CommentsScreenContent(
     screenState: State<CommentsScreenState>,
-    onBackPressedListener: () -> Unit,
+    onBackPressedListener: () -> Unit
 ) {
     val currentState = screenState.value
 
@@ -102,7 +102,7 @@ private fun CommentsScreenContent(
                 items(
                     items = currentState.comments,
                     key = { it.id }
-                ) {postComment ->
+                ) { postComment ->
                     CommentItem(postComment)
                 }
             }

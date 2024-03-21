@@ -1,7 +1,7 @@
 package com.example.vknewsclient.di
 
 import android.content.Context
-import com.example.vknewsclient.presentation.ViewModelFactory
+import com.example.vknewsclient.presentation.core.ViewModelFactory
 import dagger.BindsInstance
 import dagger.Component
 

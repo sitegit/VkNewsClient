@@ -24,8 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vknewsclient.domain.entity.FeedPost
-import com.example.vknewsclient.presentation.getApplicationComponent
-import com.example.vknewsclient.ui.theme.DarkBlue
+import com.example.vknewsclient.presentation.ui.common.NewsFeedScreenState
+import com.example.vknewsclient.presentation.ui.common.PostCard
+import com.example.vknewsclient.presentation.core.getApplicationComponent
+import com.example.vknewsclient.presentation.ui.theme.DarkBlue
 
 @Composable
 fun NewsFeedScreen(

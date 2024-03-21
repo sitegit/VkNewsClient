@@ -7,8 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.vknewsclient.domain.entity.AuthState
-import com.example.vknewsclient.presentation.getApplicationComponent
-import com.example.vknewsclient.ui.theme.VkNewsClientTheme
+import com.example.vknewsclient.presentation.core.getApplicationComponent
+import com.example.vknewsclient.presentation.ui.theme.VkNewsClientTheme
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.auth.VKScope
 
@@ -19,7 +19,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-
             val component = getApplicationComponent()
             val viewModel: MainViewModel = viewModel(factory = component.getViewModelFactory())
             val authState = viewModel.authState.collectAsState(initial = AuthState.Initial)
@@ -38,7 +37,6 @@ class MainActivity : ComponentActivity() {
                     }
                     else -> {}
                 }
-
             }
         }
     }

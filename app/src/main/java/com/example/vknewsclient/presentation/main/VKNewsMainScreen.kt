@@ -11,14 +11,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.vknewsclient.navigation.AppNavGraph
 import com.example.vknewsclient.navigation.rememberNavigationState
 import com.example.vknewsclient.presentation.comments.CommentsScreen
+import com.example.vknewsclient.presentation.favourite.FavouriteScreen
 import com.example.vknewsclient.presentation.news.NewsFeedScreen
+import com.example.vknewsclient.presentation.profile.ProfileScreen
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -59,7 +60,7 @@ fun MainScreen() {
                             selectedTextColor = MaterialTheme.colorScheme.onPrimary,
                             unselectedIconColor = MaterialTheme.colorScheme.onSecondary,
                             unselectedTextColor = MaterialTheme.colorScheme.onSecondary,
-                            indicatorColor = MaterialTheme.colorScheme.secondary
+                            indicatorColor = MaterialTheme.colorScheme.onSecondary
                         )
                     )
                 }
@@ -69,12 +70,9 @@ fun MainScreen() {
         AppNavGraph(
             navHostController = navigateState.navHostController,
             newsFeedScreenContent = {
-                NewsFeedScreen(
-                    paddingValues = paddingValues,
-                    onCommentsClickListener = { feedPost ->
-                        navigateState.navigateToComments(feedPost)
-                    }
-                )
+                NewsFeedScreen(paddingValues = paddingValues) {
+                    navigateState.navigateToComments(it)
+                }
             },
             commentsScreenContent = { feedPost ->
                 CommentsScreen(feedPost) {
@@ -84,8 +82,14 @@ fun MainScreen() {
                     navigateState.navHostController.popBackStack()
                 }
             },
-            favouriteScreenContent = { Text(text = "Favourite", color = Color.Blue) },
-            profileScreenContent = { Text(text = "Profile", color = Color.Blue) }
+            favouriteScreenContent = {
+                FavouriteScreen(paddingValues = paddingValues) {
+                    navigateState.navigateToComments(it)
+                }
+            },
+            profileScreenContent = {
+                ProfileScreen(paddingValues = paddingValues)
+            }
         )
     }
 }

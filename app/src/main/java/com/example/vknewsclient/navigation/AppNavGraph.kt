@@ -12,7 +12,7 @@ fun AppNavGraph(
     newsFeedScreenContent: @Composable () -> Unit,
     favouriteScreenContent: @Composable () -> Unit,
     profileScreenContent: @Composable () -> Unit,
-    commentsScreenContent: @Composable (FeedPost) -> Unit,
+    commentsScreenContent: @Composable (FeedPost) -> Unit
 ) {
     NavHost(
         navController = navHostController,
